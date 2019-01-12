@@ -1,5 +1,14 @@
 from model.model import build_model
+from model.features import generate_features
+from model.model_selection import xy
 
 
-def test_handles_model(data):
-    build_model()
+# Check if model agrees with the schema in data
+def test_model_pipeline(data):
+    dataset = generate_features(data)
+    X, y = xy(dataset)
+
+    model = build_model()
+    model.fit(X, y)
+
+    print(dataset.info())

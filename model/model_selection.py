@@ -8,8 +8,9 @@ def xy(df):
     return df.drop(columns="purchase"), df["purchase"].values
 
 
-def train_last_day_split(df, day):
-    return xy(downsample(df[df["t"] < day])), xy(df[df["t"] == day])
+def train_last_day_split(df, day, full_training=False):
+    train = downsample(df[df["t"] < day], skip=full_training)
+    return xy(train), xy(df[df["t"] == day])
 
 
 class HomogenousSplitCV(BaseCrossValidator):

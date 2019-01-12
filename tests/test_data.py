@@ -6,7 +6,7 @@ def test_has_same_price_in_time(data):
         lambda x: x.mean())
     np.testing.assert_almost_equal(
         data["price"].values,
-        price_recalculated.values)
+        price_recalculated.values, decimal=5)  # Comes from lower precision
 
 
 def test_has_same_ads_time(data):

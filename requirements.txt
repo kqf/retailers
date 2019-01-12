@@ -3,3 +3,6 @@ jupyter
 pandas
 pytest
 click
+tqdm
+scikit-learn
+matplotlib
