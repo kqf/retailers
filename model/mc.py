@@ -12,7 +12,7 @@ def generate_dataset(file_path, positive_size=80000, min_price=0.2,
                          columns=["i", "j", "t"])
 
     # Generate prices
-    dummy["price"] = dummy.groupby(["j", "t"])["i"].transform(
+    dummy["price"] = dummy.groupby(["j"])["i"].transform(
         lambda x: np.random.uniform(min_price, max_price))
 
     # Generate advertisements
