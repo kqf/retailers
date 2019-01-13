@@ -5,6 +5,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import FunctionTransformer
 from sklearn.linear_model import LogisticRegression  # noqa
 
 
@@ -48,6 +49,24 @@ class TotalBoughtUnitsTransformer(BaseEstimator, TransformerMixin):
         return self.vocabulary_.get(target, self.fillna)
 
 
+class DiscountExtractor(BaseEstimator, TransformerMixin):
+    def __init__(self, target, arg):
+        self.target = target
+        self.arg = arg
+        self.vocabulary_ = None
+
+    def fit(self, X, y=None):
+        data = X.loc[:, [self.target, self.arg]]
+        self.vocabulary_ = data.groupby(self.arg)[self.target].agg(
+            lambda x: x.mode())
+        return self
+
+    def transform(self, X):
+        target = X[self.arg]
+        discount = target.map(self.vocabulary_) - X[self.target]
+        return discount.values.reshape(-1, 1)
+
+
 def categorical(colname):
     return make_pipeline(
         PandasSelector(colname, records=True),
@@ -64,14 +83,17 @@ def build_model(classifier=LogisticRegression(solver="lbfgs")):
                 "j"
             ]),
             TotalBoughtUnitsTransformer(["i", "j"]),
+            DiscountExtractor(target="price", arg="j"),
+            make_pipeline(
+                PandasSelector(["t"]),
+                FunctionTransformer(lambda x: x % 7, validate=True)
+            ),
             make_pipeline(
                 PandasSelector([
-                    "price",
+                    "t",
                     "advertised",
-                    "discount",
-                    "weekday",
+                    "price",
                     "days_passed_since_last_ad",
-                    "t"
                 ]),
                 # StandardScaler()
             ),

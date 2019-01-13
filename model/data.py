@@ -86,6 +86,13 @@ def reduce_size(df):
     return df
 
 
+def time_since_last_ad(df):
+    df["days_passed_since_last_ad"] = df["t"] - df["t"].where(
+        df["advertised"] > 0).groupby(df["j"]).ffill()
+    df["days_passed_since_last_ad"].fillna(-1, inplace=True)
+    return df
+
+
 def prepare_dataset(path, future_index=49):
     df = pd.read_csv(path / "train.csv")
 
@@ -99,5 +106,12 @@ def prepare_dataset(path, future_index=49):
     df = reduce_size(df)
 
     # Add schedule for the future prediction
-    # extended = add_schedule(extended, path, future_index)
+    df = add_schedule(df, path, future_index)
+    df = df.sort_values(by=["t"]).reset_index(drop=True)
+
+    # NB: Feature genereation should be a part of a model
+    #     (fit/transform methods). Here it's implented as a separate module
+    #     in order to have a bit more flexibility (for model selection)
+    #     and it's easier to read.
+    df = time_since_last_ad(df)
     return df
