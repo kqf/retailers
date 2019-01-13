@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import BaseCrossValidator
 from model.data import downsample
+from sklearn.metrics import roc_auc_score
+from sklearn.base import clone
 
 
 def xy(df):
@@ -20,25 +22,34 @@ class HomogenousSplitCV(BaseCrossValidator):
     def get_n_splits(self, X=None, y=None, groups=None):
         return self.n_splits
 
-    def split(self, X, y=None):
+    def split(self, X, y=None, groups=None):
         start, stop = X.t.min(), X.t.max()
         step = (stop - start) // self.n_splits or 1
         for i in range(start + step, stop, step):
-            yield X.t < i, X.t > i
+            yield X.t < i, X.t >= i
 
 
 class LastIntervalSplitCV(BaseCrossValidator):
-    def __init__(self, n_splits=3):
+    def __init__(self, n_splits=3, n_min=0):
         self.n_splits = n_splits
+        self.n_min = n_min
 
     def get_n_splits(self, X=None, y=None, groups=None):
         return self.n_splits
 
-    def split(self, X, y=None):
-        start, stop = X.t.min(), X.t.max()
+    def split(self, X, y=None, groups=None):
+        start, stop = X.t.min() + self.n_min, X.t.max()
         assert stop - start > self.n_splits
-        for i in range(stop - self.n_splits + 1, stop + 1):
+        for i in range(stop - self.n_splits + 1, stop):
             yield X.t < i, X.t == i
+
+
+# sklearn.model_selection.cross_val_score doesn't play well wiht pandas
+def cross_val_score(model, X, y, cv):
+    for tr, te in cv.split(X):
+        model = clone(model)
+        model.fit(X[tr], y[tr])
+        yield roc_auc_score(y[te], model.predict_proba(X[te])[:, 1])
 
 
 def plot_roc_curve(y, y_pred, name):

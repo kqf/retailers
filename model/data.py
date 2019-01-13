@@ -47,13 +47,9 @@ def extend_dataset(df):
 def downsample(df, skip=False):
     if skip:
         return df
-    print("Before downlsampling", len(df))
     original = df[df.purchase == 1]
-    print("Original dataset", len(original))
     sampled = df[df.purchase == 0].sample(n=len(original))
-    concatenated = pd.concat([original, sampled])
-    print("After downlsampling", len(concatenated))
-    return concatenated
+    return pd.concat([original, sampled])
 
 
 def add_schedule(df, path, future_index):

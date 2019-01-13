@@ -75,7 +75,10 @@ def categorical(colname):
     )
 
 
-def build_model(classifier=LogisticRegression(solver="lbfgs")):
+def build_model(classifier=None):
+    classifier = classifier or LogisticRegression(solver="liblinear",
+                                                  class_weight="balanced")
+
     model = make_pipeline(
         make_union(
             categorical([
@@ -83,11 +86,11 @@ def build_model(classifier=LogisticRegression(solver="lbfgs")):
                 "j"
             ]),
             TotalBoughtUnitsTransformer(["i", "j"]),
-            DiscountExtractor(target="price", arg="j"),
-            make_pipeline(
+            make_pipeline(  # It seems that this feature is useless
                 PandasSelector(["t"]),
                 FunctionTransformer(lambda x: x % 4, validate=True)
             ),
+            DiscountExtractor(target="price", arg="j"),
             make_pipeline(
                 PandasSelector([
                     "t",
@@ -97,7 +100,6 @@ def build_model(classifier=LogisticRegression(solver="lbfgs")):
                 ]),
                 # StandardScaler()
             ),
-            # PandasSelector(pattern="j_"),
         ),
         classifier
     )
