@@ -20,9 +20,9 @@ def data_path():
     yield DATA_PATH
 
     # teardown
-    # if not files_exist:
-    #     train_path.unlink()
-    #     schedule_path.unlink()
+    if not files_exist:
+        train_path.unlink()
+        schedule_path.unlink()
 
 
 @pytest.fixture(scope="session")

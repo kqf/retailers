@@ -4,11 +4,11 @@ import numpy as np
 import pandas as pd
 
 
-def outer_product(clients=2000, products=40, days=50):
+def outer_product(clients=2000, products=40, weeks=50):
     return product(
         np.arange(clients),
         np.arange(products),
-        np.arange(days)
+        np.arange(weeks)
     )
 
 
@@ -65,7 +65,7 @@ def add_schedule(df, path, future_index):
         "advertised": np.zeros(n_categories),
     }).set_index("j")
 
-    # There's no need to fill all promotions days
+    # There's no need to fill all promotions weeks
     ps.update(
         pd.read_csv(path / "promotion_schedule.csv").set_index("j")
     )
@@ -73,7 +73,7 @@ def add_schedule(df, path, future_index):
 
     idx = df.t == future_index
     df.loc[idx, "advertised"] = df[idx]["j"].map(ps['advertised'])
-    df.loc[idx, "price"] -= df[idx]["j"].map(ps['discount'])
+    df.loc[idx, "price"] *= df[idx]["j"].map(ps['discount'])
     return df
 
 
@@ -87,9 +87,9 @@ def reduce_size(df):
 
 
 def time_since_last_ad(df):
-    df["days_passed_since_last_ad"] = df["t"] - df["t"].where(
+    df["weeks_passed_since_last_ad"] = df["t"] - df["t"].where(
         df["advertised"] > 0).groupby(df["j"]).ffill()
-    df["days_passed_since_last_ad"].fillna(-1, inplace=True)
+    df["weeks_passed_since_last_ad"].fillna(-1, inplace=True)
     return df
 
 

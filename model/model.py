@@ -63,7 +63,7 @@ class DiscountExtractor(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         target = X[self.arg]
-        discount = target.map(self.vocabulary_) - X[self.target]
+        discount = target.map(self.vocabulary_) / X[self.target]
         return discount.values.reshape(-1, 1)
 
 
@@ -86,14 +86,14 @@ def build_model(classifier=LogisticRegression(solver="lbfgs")):
             DiscountExtractor(target="price", arg="j"),
             make_pipeline(
                 PandasSelector(["t"]),
-                FunctionTransformer(lambda x: x % 7, validate=True)
+                FunctionTransformer(lambda x: x % 4, validate=True)
             ),
             make_pipeline(
                 PandasSelector([
                     "t",
                     "advertised",
                     "price",
-                    "days_passed_since_last_ad",
+                    "weeks_passed_since_last_ad",
                 ]),
                 # StandardScaler()
             ),

@@ -3,7 +3,7 @@ from pathlib import Path
 import click
 from model.model import build_model
 from model.data import prepare_dataset
-from model.model_selection import train_last_day_split
+from model.model_selection import train_last_week_split
 
 
 @click.command()
@@ -18,8 +18,8 @@ from model.model_selection import train_last_day_split
               required=True)
 def main(data_path, week):
     data = prepare_dataset(data_path)
-    (X_tr, y_tr), (X_te, y_te) = train_last_day_split(
-        data, day=week, full_training=False)
+    (X_tr, y_tr), (X_te, y_te) = train_last_week_split(
+        data, week=week, full_training=False)
     clf = build_model()
     clf.fit(X_tr, y_tr)
 

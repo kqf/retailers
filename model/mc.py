@@ -7,8 +7,8 @@ from model.data import outer_product
 
 
 def generate_dataset(file_path, positive_size=80000, min_price=0.2,
-                     max_price=3.5, ad_p=0.5, days=49):
-    dummy = pd.DataFrame(list(outer_product(days=days)),
+                     max_price=3.5, ad_p=0.5, weeks=49):
+    dummy = pd.DataFrame(list(outer_product(weeks=weeks)),
                          columns=["i", "j", "t"])
 
     # Generate prices
