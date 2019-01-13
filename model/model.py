@@ -1,14 +1,11 @@
+import numpy as np
 from sklearn.pipeline import make_pipeline
 from sklearn.pipeline import make_union
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_extraction import DictVectorizer
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression  # noqa
-
-
-# TODO: Remove me
-def read_dataset():
-    return None, None, None, None
 
 
 class PandasSelector(BaseEstimator, TransformerMixin):
@@ -30,27 +27,45 @@ class PandasSelector(BaseEstimator, TransformerMixin):
         return X[self.columns]
 
 
+class TotalBoughtUnitsTransformer(BaseEstimator, TransformerMixin):
+    def __init__(self, cols, fillna=0):
+        self.fillna = fillna
+        self.cols = cols
+        self.vocabulary_ = None
+
+    def fit(self, X, y=None):
+        X = X.loc[:, self.cols]
+        X["_answer"] = y
+        self.vocabulary_ = X.groupby(self.cols)["_answer"].apply(
+            lambda x: x.sum()).to_dict()
+        return self
+
+    def transform(self, X):
+        targets = list(zip(*X[self.cols].values.T))
+        return np.array(list(map(self._translate, targets))).reshape(-1, 1)
+
+    def _translate(self, target):
+        return self.vocabulary_.get(target, self.fillna)
+
+
 def categorical(colname):
     return make_pipeline(
         PandasSelector(colname, records=True),
-        DictVectorizer(),
+        DictVectorizer(sparse=False),
+        OneHotEncoder(categories='auto'),
     )
 
 
 def build_model(classifier=LogisticRegression(solver="lbfgs")):
     model = make_pipeline(
         make_union(
-            # categorical([
-            #     "i",
-            #     "j"
-            # ]),
+            categorical([
+                "i",
+                "j"
+            ]),
+            TotalBoughtUnitsTransformer(["i", "j"]),
             make_pipeline(
                 PandasSelector([
-                    # "cum_price_i",
-                    # "cum_price_j",
-                    # "cum_ij",
-                    # "cum_purchases_i",
-                    # "cum_purchases_j",
                     "price",
                     "advertised",
                     "discount",
@@ -60,7 +75,7 @@ def build_model(classifier=LogisticRegression(solver="lbfgs")):
                 ]),
                 # StandardScaler()
             ),
-            PandasSelector(pattern="j_"),
+            # PandasSelector(pattern="j_"),
         ),
         classifier
     )
