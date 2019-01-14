@@ -1,6 +1,7 @@
 # Time series classification [![Build Status](https://travis-ci.com/kqf/retailers.svg?token=7bkqqhrPB19pD1YKrAZM&branch=master)](https://travis-ci.com/kqf/retailers)
 Brief description: this is a simple model to predict wheather certain event will occur.
-Steps:
+
+The main steps:
 - Build dataset
 - Setup validation
 - Generate Features / Tune model
