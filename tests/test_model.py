@@ -4,6 +4,6 @@ from model.model_selection import xy
 
 # Check if model agrees with the schema in data
 def test_model_pipeline(data):
-    X, y = xy(data[data.t < 48].sample(10000))
+    X, y = xy(data)
     model = build_model()
     model.fit(X, y)

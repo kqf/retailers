@@ -4,9 +4,9 @@ from sklearn.pipeline import make_union
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.preprocessing import OneHotEncoder
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler  # noqa
 from sklearn.preprocessing import FunctionTransformer
-from sklearn.linear_model import LogisticRegression  # noqa
+from sklearn.linear_model import LogisticRegression
 
 
 class PandasSelector(BaseEstimator, TransformerMixin):
@@ -85,7 +85,10 @@ def build_model(classifier=None):
                 "i",
                 "j"
             ]),
-            TotalBoughtUnitsTransformer(["i", "j"]),
+            make_pipeline(
+                TotalBoughtUnitsTransformer(["i", "j"]),
+                # StandardScaler(),
+            ),
             make_pipeline(  # It seems that this feature is useless
                 PandasSelector(["t"]),
                 FunctionTransformer(lambda x: x % 4, validate=True)

@@ -69,7 +69,7 @@ def add_schedule(df, path, future_index):
 
     idx = df.t == future_index
     df.loc[idx, "advertised"] = df[idx]["j"].map(ps['advertised'])
-    df.loc[idx, "price"] *= df[idx]["j"].map(ps['discount'])
+    df.loc[idx, "price"] *= 1. - df[idx]["j"].map(ps['discount'])
     return df
 
 
